@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Cordova</title>
+	<script type="text/javascript" charset="utf-8" src="cordova-2.0.0.js"></script>
+	<script type="text/javascript" charset="utf-8" src="jquery-1.7.2.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8">
+	function initiliazeApp() {
+		document.addEventListener("deviceready", onDeviceReady, false);
+	}
+
+	function onDeviceReady(){
+		var el = document.getElementById("status"); // basic javascript manipulation
+		el.innerHTML = el.innerHTML + "PhoneGap ready<BR>";
+	}
+
+	$(document).ready(function(){
+		$("#status").html($("#status").html() + "jQuery ready<BR>"); // jquery manipulation
+	});
+	
+	// loads the schedule from scraping barcamp website
+	// PhoneGap not affected by Javascript's cross-domain restriction
+	//    http://wiki.phonegap.com/w/page/16494770/FAQ
+	function loadSchedule(url){
+		$("#status").text("Loading..." + url);
+		$.get(url, function(data){
+			$("#status").text("\nReceived " + data.length);
+			$("#rawoutput").text(data); // dump raw html at the bottom
+
+			// please forgive my lack of javascript foo
+			var msg ='';
+			var pos_start = data.indexOf('<table class="schedule">');
+			pos_start = data.indexOf('<table class="schedule">', pos_start);
+			var pos_end = data.indexOf("</table>",  pos_start); 
+			msg += data.substring(pos_start, pos_end) + "</table>";
+			
+			$("#output").html(msg);
+			$("#status").text("Done!");
+		});	
+	}
+	
+	// code from PhoneGap.com http://docs.phonegap.com/en/2.0.0/cordova_camera_camera.md.html#Camera
+	// take a photo and display in app
+	// seems not to work in the emuator!
+    function capturePhoto() {
+      // Take picture using device camera and retrieve image as base64-encoded string
+      navigator.camera.getPicture(onPhotoDataSuccess, onFail, { quality: 50,
+        destinationType: Camera.DestinationType.DATA_URL });
+    }
+    // Called when a photo is successfully retrieved
+    //
+    function onPhotoDataSuccess(imageData) {
+      // Uncomment to view the base64 encoded image data
+      // console.log(imageData);
+
+      // Get image handle
+      //
+      var smallImage = document.getElementById('smallImage');
+
+      // Unhide image elements
+      //
+      smallImage.style.display = 'block';
+
+      // Show the captured photo
+      // The inline CSS rules are used to resize the image
+      //
+      smallImage.src = "data:image/jpeg;base64," + imageData;
+    }    
+	function onFail(message) {
+      alert('Failed because: ' + message);
+    }
+	</script>
+</head>
+<body onload="initiliazeApp()">
+<h1>Hello Barcamp!</h1>
+<!-- link a local image -->
+<img src='images/bannerv2.png' style='width: 100%'>
+<!-- website that loads in external browser -->
+We're at <a href="http://barcampmel.org/">Barcamp Melbourne!</a><BR>
+<!-- website that loads in the app by adding to whitelist in res/xml/config.xml -->
+<a href="https://twitter.com/BarCampMel">@BarCampMel</a><BR>
+<!-- load a local html page -->
+<a href="about.html">About</a><BR>
+<!-- do an ajax call -->
+<a href="http://barcampmel.org/schedule/" onclick="loadSchedule('http://barcampmel.org/schedule/'); return false;">Load Schedule</a><BR>
+<div id="status"></div>
+<div id="output"></div>
+<div id="rawoutput"></div>
+
+<!-- hardware interaction via javascript -->
+<button onclick="capturePhoto();">Capture Photo</button> <br>
+<img id="smallImage" style='width: 100%'>
+</body>
+</html>
